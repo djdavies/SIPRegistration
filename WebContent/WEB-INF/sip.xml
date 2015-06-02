@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sip-app>
+ 
+	<app-name>RegisterBlock</app-name>
+	<display-name>RegisterBlock</display-name>
+	<description>RegisterBlock</description>
+	
+	<main-servlet>
+		RegisterBlock
+	</main-servlet>
+
+	<servlet>
+		<servlet-name>RegisterBlock</servlet-name>
+		<display-name>RegisterBlock</display-name>
+		<description>RegisterBlock</description>
+		<servlet-class>
+			org.example.servlet.sip.RegisterBlock
+		</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+</sip-app>
