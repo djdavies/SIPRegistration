@@ -1,16 +1,18 @@
 package org.example.servlet.sip;
 
+import java.time.LocalDateTime;
+
 import javax.servlet.sip.URI;
 
 public class RegistryEntry {
 	private URI contact;
-	private int expiryTime;
+	private LocalDateTime expiryTime;
 	
 	public URI getContact() {
 		return contact;
 	}
 	
-	public int getExpiryTime() {
+	public LocalDateTime getExpiryTime() {
 		return this.expiryTime;
 	}
 	
@@ -18,7 +20,7 @@ public class RegistryEntry {
 		this.contact = contact;
 	}
 	
-	public void setTimeStamp(int expiryTime) {
+	public void setExpiryTime(LocalDateTime expiryTime) {
 		this.expiryTime = expiryTime;
 	}
 }

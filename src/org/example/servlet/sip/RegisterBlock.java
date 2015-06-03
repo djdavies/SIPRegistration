@@ -29,7 +29,7 @@ public class RegisterBlock extends SipServlet {
 		URI aorUri = request.getRequestURI();
 		System.out.println("AOR URI from map: " + aorUri.toString());
 		
-		// Get the map.
+		// Instantiate the map.
 		HashMap<URI, RegistryEntry> registryMap = 
 				(HashMap<URI, RegistryEntry>) servletContext.getAttribute("registryMap");
 		
@@ -50,7 +50,7 @@ public class RegisterBlock extends SipServlet {
 			} else {
 				// We know there is no IP with the given aorUri
 				// so send back a error.
-				request.createResponse(487).send();
+				request.createResponse(404).send();
 			}
 			
 		} 
@@ -91,24 +91,55 @@ public class RegisterBlock extends SipServlet {
 			registryMap = new HashMap<URI, RegistryEntry>();
 		} 
 		
-		// TODO (for 2038) -- replace this method, otherwise UNIX timestamp will cause buffer overflow.
-		LocalDateTime now = LocalDateTime.now();
-		int expiryTime = now.getNano() + request.getExpires();
-
-		// For adding new entries: contact, expiryTime.
-		RegistryEntry registryEntry = new RegistryEntry();
-		registryEntry.setContact(contact);
-		registryEntry.setTimeStamp(expiryTime);
-		
-		// If entry with AOR exists, replace with new data. 
-		if (registryMap.get(aor) != null) {
-			registryMap.replace(aor, registryEntry);
-			// Otherwise; create new entry.
-		} else {
-			// Putting an AOR contact record into the registryMap.
-			registryMap.put(aor, registryEntry);
+		System.out.println("Initial size of the map: " + registryMap.size());
+		for( URI aorUri : registryMap.keySet() ) {
+			RegistryEntry entry = registryMap.get(aorUri);
+			System.out.println("AOR: " + aorUri 
+					+ ", Contact: " + entry.getContact() 
+					+ ", timestamp: " + entry.getExpiryTime().toString());
 		}
 		
+		//If the request expiry time is 0 then unregister the aor from the map
+		if ( request.getExpires() == 0) {
+			System.out.println( "expiry time is:" + request.getExpires() );
+			RegistryEntry entry = registryMap.remove(aor);
+			if ( null != entry ) {
+				System.out.println("AOR: " + aor
+						+ ", Contact: " + entry.getContact() 
+						+ ", timestamp: " + entry.getExpiryTime().toString());
+				System.out.println("Size of the map after removing item: " + registryMap.size());
+			}	
+		} else {
+			// we need to replace an existing entry or add a new one
+			// TODO (for 2038)
+			// replace this method, otherwise UNIX timestamp will cause buffer overflow.
+			LocalDateTime now = LocalDateTime.now();
+			LocalDateTime expiryTime = now.plusSeconds(request.getExpires());
+			
+			// For adding new entries: contact, expiryTime.
+			RegistryEntry registryEntry = new RegistryEntry();
+			registryEntry.setContact(contact);
+			registryEntry.setExpiryTime(expiryTime);
+			
+			// If entry with AOR exists, replace with new data. 
+			if (registryMap.get(aor) != null) {
+				registryMap.replace(aor, registryEntry);
+				// Otherwise; create new entry.
+				
+			} else {
+				// Putting an AOR contact record into the registryMap.
+				registryMap.put(aor, registryEntry);
+			}
+			
+			System.out.println("Size of the map after put'ing: " + registryMap.size());
+
+			for( URI aorUri : registryMap.keySet() ) {
+				RegistryEntry entry = registryMap.get(aorUri);
+				System.out.println("AOR: " + aorUri 
+						+ ", Contact: " + entry.getContact() 
+						+ ", timestamp: " + entry.getExpiryTime().toString());
+			}
+		}
 		// Get servletContext, set Map as an attribute.
 		servletContext.setAttribute("registryMap", registryMap);
 				
@@ -120,6 +151,5 @@ public class RegisterBlock extends SipServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 }
